@@ -5,7 +5,7 @@ static const char *TAG = "sensor";
 BMP180_CAL_TypeDef bmp180_calibration_data;
 bool bmp180_initialized = false;
 
-void sensor_init(I2C_HandleTypeDef *hi2c1, I2C_HandleTypeDef *hi2c2) {
+void sensor_init(I2C_HandleTypeDef *hi2c1) {
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data;
 
@@ -20,7 +20,7 @@ void sensor_init(I2C_HandleTypeDef *hi2c1, I2C_HandleTypeDef *hi2c2) {
     }
 
     // Check if we can communicate with the sensor
-    ret = HAL_I2C_Mem_Read(hi2c2, TH09C_ADDRESS << 1, TH09C_REG_SENS_STAT, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    ret = HAL_I2C_Mem_Read(hi2c1, TH09C_ADDRESS << 1, TH09C_REG_SENS_STAT, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         printf("%s: Failed to communicate with TH09C sensor: %d\r\n", TAG, ret);
     }
@@ -30,14 +30,14 @@ void sensor_init(I2C_HandleTypeDef *hi2c1, I2C_HandleTypeDef *hi2c2) {
 
     // Configure sensor for single shot mode (0x00 = single shot mode for both sensors)
     data = 0x00;
-    ret = HAL_I2C_Mem_Write(hi2c2, TH09C_ADDRESS << 1, TH09C_REG_SENS_RUN, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    ret = HAL_I2C_Mem_Write(hi2c1, TH09C_ADDRESS << 1, TH09C_REG_SENS_RUN, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         printf("%s: Failed to set TH09C run mode: %d\r\n", TAG, ret);
     }
 
     // Configure system control register - enable low power mode
     data = TH09C_LOW_POWER_BIT;  // Set low power bit
-    ret = HAL_I2C_Mem_Write(hi2c2, TH09C_ADDRESS << 1, TH09C_REG_SYS_CTRL, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    ret = HAL_I2C_Mem_Write(hi2c1, TH09C_ADDRESS << 1, TH09C_REG_SYS_CTRL, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         printf("%s: Failed to configure TH09C system control: %d\r\n", TAG, ret);
     }

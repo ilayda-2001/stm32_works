@@ -63,7 +63,7 @@ typedef struct {
 } bmp180_reading_t;
 
 // function prototypes
-void sensor_init(I2C_HandleTypeDef *hi2c1, I2C_HandleTypeDef *hi2c2);
+void sensor_init(I2C_HandleTypeDef *hi2c1);
 bmp180_reading_t sensor_read_bmp180(I2C_HandleTypeDef *hi2c);
 th09c_reading_t sensor_read_th09c(I2C_HandleTypeDef *hi2c);
 uint32_t crc7(uint32_t val);

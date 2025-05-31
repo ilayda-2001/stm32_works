@@ -26,4 +26,5 @@ Core/Src \
 Core/Startup \
 Drivers/BMP180/Src \
 Drivers/STM32F7xx_HAL_Driver/Src \
+myDrivers/Sensors/Src \
 
