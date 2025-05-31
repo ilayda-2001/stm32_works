@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
+  **************************
   * @file           : main.c
   * @brief          : Main program body
-  ******************************************************************************
+  **************************
   * @attention
   *
   * Copyright (c) 2025 STMicroelectronics.
@@ -13,7 +13,7 @@
   * in the root directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
-  ******************************************************************************
+  **************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -23,6 +23,10 @@
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
+#include <stdio.h>
+#include <string.h>
+#include "sensors.h"
+#include "BMP180_api.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -33,6 +37,7 @@
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
+
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -43,7 +48,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
+bmp180_reading_t bmp_data;
+th09c_reading_t th09c_data;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -57,6 +63,10 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int __io_putchar(int ch) {
+  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  return ch;
+}
 
 /* USER CODE END 0 */
 
@@ -80,14 +90,12 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -95,16 +103,46 @@ int main(void)
   MX_I2C1_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  sensor_init(&hi2c1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
+  while(1){
+    // Read BMP180 sensor data
+    bmp_data = sensor_read_bmp180(&hi2c1);
 
-    /* USER CODE BEGIN 3 */
+    // Check for errors in BMP180 reading
+    if (bmp_data.status != HAL_OK)
+    {
+      printf("Error reading BMP180 sensor: status %d\r\n", bmp_data.status);
+    }
+    else
+    {
+      // Print BMP180 data over UART with 2 decimal places
+      float temp = bmp_data.temperature / 100.0f;
+      float pressure = bmp_data.pressure / 100.0f;  // Convert Pa to hPa
+
+      printf("BMP180: Temp=%.2f°C, Pressure=%.2f hPa\r\n", temp, pressure);
+    }
+
+    // Read TH09C sensor data
+    th09c_data = sensor_read_th09c(&hi2c1);
+
+    // Check for errors in TH09C reading
+    if (th09c_data.status != HAL_OK)
+    {
+      printf("Error reading TH09C sensor: status %d\r\n", th09c_data.status);
+    }
+    else
+    {
+      // Print TH09C data over UART with 2 decimal places
+      printf("TH09C: Temp=%.2f°C, Humidity=%.2f%%\r\n",
+             th09c_data.temperature, th09c_data.humidity);
+    }
+
+    // Delay between readings
+    HAL_Delay(2000);  // 2 seconds between readings
   }
   /* USER CODE END 3 */
 }
@@ -126,13 +164,12 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 16;
-  RCC_OscInitStruct.PLL.PLLN = 432;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 216;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
