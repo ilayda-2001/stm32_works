@@ -1,0 +1,5 @@
+../Drivers/BMP180/Src/BMP180_api.c:6:19:BMP180_READ_CALDATA	56	static
+../Drivers/BMP180/Src/BMP180_api.c:42:19:BMP180_READ_UT	40	static
+../Drivers/BMP180/Src/BMP180_api.c:69:7:BMP180_CALC_TEMP	32	static
+../Drivers/BMP180/Src/BMP180_api.c:91:19:BMP180_READ_UP	48	static
+../Drivers/BMP180/Src/BMP180_api.c:127:6:BMP180_CALC_PRESS	56	static
